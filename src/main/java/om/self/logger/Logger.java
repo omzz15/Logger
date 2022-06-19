@@ -1,3 +1,7 @@
+package om.self.logger;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -98,10 +102,11 @@ public class Logger {
      * @throws IOException If file can not be created.
      * @throws SecurityException If there are security issues.
      */
-    public static File getFile(String Name, Path path)throws IOException, SecurityException{
+    public static File getFile(String Name, Path path)throws Exception, IOException, SecurityException{
         if(path == null)
             path = getCurrentDirectory();
-
+        if (StringUtils.isEmpty(Name))
+            throw new Exception("File name can't be empty");
         File f = new File(path.toString() + "\\" + Name);
         createFile(f);
         return f;
@@ -150,7 +155,7 @@ public class Logger {
      * @throws IOException if the file could not be made.
      * @throws SecurityException if there is a security exception.
     */
-    public static void makeFile(List<Message> messages, boolean append) throws IOException, SecurityException{
+    public static void makeFile(List<Message> messages, boolean append) throws Exception, IOException, SecurityException{
         makeFile(messages, getFile("log.txt", getCurrentDirectory()), append);
     }
 

@@ -1,3 +1,5 @@
+package om.self.logger;
+
 public class Message{
     //resets color for terminal
     static final String ANSI_RESET = "\u001B[0m";
