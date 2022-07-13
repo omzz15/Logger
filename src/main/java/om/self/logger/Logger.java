@@ -16,9 +16,22 @@ import java.util.List;
  * The Logger class is used to log messages to a file or print them.
  */
 public class Logger {
-    private LinkedList<Message> messages = new LinkedList<>();
+    private static String defaultFileName = "log.txt";
+    /**
+     * stack of stored messages(in order)
+     * NOTE: not all messages will be stored, the store flag must be true when calling addMessage()
+     */
+    private final LinkedList<Message> messages = new LinkedList<>();
     private Path filePath;
     private File file;
+
+    public static String getDefaultFileName() {
+        return defaultFileName;
+    }
+
+    public static void setDefaultFileName(String defaultFileName) {
+        Logger.defaultFileName = defaultFileName;
+    }
 
     /**
      * set the file path to log to.
@@ -71,7 +84,7 @@ public class Logger {
     /**
      * sets the file to the name or directory and name in
      * @param fileName The name of the file you want to log to. This can include a path as well.
-     * @param useFilePath Whether or not to use the file path stored by the Logger.
+     * @param useFilePath Whether to use the file path stored by the Logger.
      * @throws IOException If the file cannot be created.
      * @throws SecurityException If there is a security exception.
      */
@@ -83,14 +96,14 @@ public class Logger {
     }
 
     /**
-     * get the stored file in the Logger(if no file is stored then it will create a "log.txt" in stored directory).
+     * get the stored file in the Logger(if no file is stored then it will create a File with name based on defaultFileName in stored directory).
      * @return current file.
      * @throws IOException If the file could not be created.
      * @throws SecurityException If there was a security exception.
      */
     public File getFile() throws IOException, SecurityException{
         if(file == null)
-            setFile("log.txt", true);
+            setFile(defaultFileName, true);
         return file;
     }
 
@@ -107,16 +120,16 @@ public class Logger {
             path = getCurrentDirectory();
         if (StringUtils.isEmpty(Name))
             throw new Exception("File name can't be empty");
-        File f = new File(path.toString() + "\\" + Name);
+        File f = new File(path + "\\" + Name);
         createFile(f);
         return f;
     }
 
     /**
-     * makes/updates the file with the givin messages.
+     * makes/updates the file with the given messages.
      * @param messages the messages to be added to file.
      * @param file the file to be updated.
-     * @param append Whether or not to append to the file(keep original stuff or overwrite it).
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
      * @throws IOException if the file could not be made.
      * @throws SecurityException if there is a security exception.
     */
@@ -149,21 +162,33 @@ public class Logger {
     }
 
    /**
-     * makes/updates a default file with the givin messages(default directory is current and default name is "log.txt").
+     * makes/updates a default file with the given messages(default directory is current and default name is defined by defaultFileName).
      * @param messages the messages to be added to file.
-     * @param append Whether or not to append to the file(keep original stuff or overwrite it).
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
      * @throws IOException if the file could not be made.
      * @throws SecurityException if there is a security exception.
     */
     public static void makeFile(List<Message> messages, boolean append) throws Exception, IOException, SecurityException{
-        makeFile(messages, getFile("log.txt", getCurrentDirectory()), append);
+        makeFile(messages, getFile(defaultFileName, getCurrentDirectory()), append);
+    }
+
+    /**
+     * makes/updates a file named by fileName parameter with the given messages(default directory is current).
+     * @param messages the messages to be added to file.
+     * @param fileName the name of the file you want to update/change(ending needs to be set, for example use "log.txt" not "log")
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
+     * @throws IOException if the file could not be made.
+     * @throws SecurityException if there is a security exception.
+     */
+    public static void makeFile(List<Message> messages, String fileName, boolean append) throws Exception, IOException, SecurityException{
+        makeFile(messages, getFile(fileName, getCurrentDirectory()), append);
     }
 
     /**
      * create a log file with stored messages.
      * @param file The file to write to.
-     * @param append Whether or not to append to the file(keep original stuff or overwrite it).
-     * @param clearMessagesAfterWrite Whether or not to clear the messages after writing.
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
+     * @param clearMessagesAfterWrite Whether to clear the messages after writing.
      * @throws IOException If the file cannot be created.
      * @throws SecurityException If there is a security exception.
      */
@@ -180,9 +205,9 @@ public class Logger {
     }
 
     /**
-     * creates a log file with stored messages using the set file(if ther is no set file then it will use default).
-     * @param append Whether or not to append to the file(keep original stuff or overwrite it).
-     * @param clearMessagesAfterWrite Whether or not to clear the messages after writing.
+     * creates a log file with stored messages using the set file(if there is no set file then it will use default).
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
+     * @param clearMessagesAfterWrite Whether to clear the messages after writing.
      * @throws IOException If the file cannot be created.
      * @throws SecurityException if there is a security exception.
      */
@@ -193,21 +218,23 @@ public class Logger {
     /**
      * add a message to the Logger.
      * @param message The message to be added.
-     * @param print Whether or not to print the message.
-     * @param store Whether or not to store the message.
+     * @param print Whether to print the message.
+     * @param store Whether to store the message.
      */
     public void addMessage(Message message, boolean print, boolean store, boolean writeToFile) {
         if (print) {
-            System.out.println(message.getFormatedMessage(true));
+            System.out.println(message.getFormattedMessage(true));
         }
         if (store) {
             messages.add(message);
         }
         if(writeToFile){
             try{
-                makeFile(Arrays.asList(new Message[]{message}), getFile(), true);
+                makeFile(Arrays.asList(message), getFile(), true);
             }
-            catch(IOException | SecurityException e){}
+            catch(Exception e){
+                addMessage(new Message("Could not write message to file.\n" + getExceptionAsString(e), Message.Type.ERROR, true), true, false, false);
+            }
         }
     }
        
@@ -220,16 +247,49 @@ public class Logger {
     }
 
     /**
-     * get all stored messages that are of a certain type.
+     * get all messages that are of a certain type.
+     * @param messages the messages you want to filter through
      * @param type The type of message to get.
      */
-    public LinkedList<Message> getStoredMessagesOfType(Message.Type type){
-        LinkedList<Message> messages = new LinkedList<>();
+    public static LinkedList<Message> getStoredMessagesOfType(List<Message> messages, Message.Type type){
+        LinkedList<Message> out = new LinkedList<>();
         for(Message message : messages){
             if(message.type == type)
-                messages.add(message);
+                out.add(message);
         }
-        return messages;
+        return out;
+    }
+
+    /**
+     * get all messages that are of certain types.
+     * only use with multiple types because it is slower than getStoredMessagesOfType()
+     * @param messages the messages you want to filter through
+     * @param types The types of message to get.
+     */
+    public static LinkedList<Message> getStoredMessagesOfTypes(List<Message> messages, Message.Type... types){
+        LinkedList<Message> out = new LinkedList<>();
+        for(Message message : messages){
+            for(Message.Type t : types)
+                if(message.type == t)
+                    out.add(message);
+        }
+        return out;
+    }
+
+    /**
+     * implementation of getStoredMessagesOfType() for Logger instances using stored messages
+     * @see this.getStoredMessagesOfType(LinkedList<Message>, Message.Type)
+     */
+    public LinkedList<Message> getStoredMessagesOfType(Message.Type type){
+        return getStoredMessagesOfType(messages, type);
+    }
+
+    /**
+     * implementation of getStoredMessagesOfTypes() for Logger instances using stored messages
+     * @see this.getStoredMessagesOfTypes(LinkedList<Message>, Message.Type...)
+     */
+    public LinkedList<Message> getStoredMessagesOfTypes(Message.Type... types){
+        return getStoredMessagesOfTypes(messages, types);
     }
 
     /**
@@ -241,18 +301,18 @@ public class Logger {
 
     /**
      * print the stored messages to the console.
-     * @param clearAfterPrint Whether or not to clear the messages after printing.
+     * @param clearAfterPrint Whether to clear the messages after printing.
      */
     public void printStoredMessages(boolean clearAfterPrint){
         for(Message m : messages)
-            System.out.println(m.getFormatedMessage(true));
+            System.out.println(m.getFormattedMessage(true));
         if(clearAfterPrint)
             clearMessages();
     }
 
     /**
      * get the stored messages as a string.
-     * @param includeColor Whether or not to include color in the messages.
+     * @param includeColor Whether to include color in the messages.
      * @return The messages as a string with new lines between each message.
      */
     public String getStoredMessagesAsString(boolean includeColor){
@@ -262,19 +322,28 @@ public class Logger {
     /**
      * get the passed in messages as a string.
      * @param messages The messages to get as a string.
-     * @param includeColor Whether or not to include color in the messages.
+     * @param includeColor Whether to include color in the messages.
      * @return The messages as a string with new lines between each message.
      */
     public static String getMessagesAsString(List<Message> messages, boolean includeColor){
         StringBuilder sb = new StringBuilder();
 
         for(Message m : messages)
-            sb.append(m.getFormatedMessage(includeColor) + "\n");
+            sb.append(m.getFormattedMessage(includeColor)).append("\n");
 
         //clear last newline
         int length = sb.length();
         sb.delete(length - 1, length);
 
         return sb.toString();
+    }
+
+    public static String getExceptionAsString(Exception e){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(e.getMessage()).append("\n");
+        for(StackTraceElement element : e.getStackTrace()){
+            stringBuilder.append("\t").append(element.toString()).append("\n");
+        }
+        return stringBuilder.toString();
     }
 }

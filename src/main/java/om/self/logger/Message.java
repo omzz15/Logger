@@ -28,26 +28,33 @@ public class Message{
 
     /**
      * Get the message as a string.
-     * @param includeColor Whether or not to include color in the message.
+     * @param includeColor Whether to include color in the message.
      * @return The message as a string.
      */
-    public String getFormatedMessage(boolean includeColor){
-        StringBuilder sb = new StringBuilder();
+    public String getFormattedMessage(boolean includeColor){
+        String out = "";
         
         if(includeColor)
-            sb.append(type.color);
+            out += type.color;
         
-        sb.append(type.value);
+        out += type.value;
 
         if(source != null)
-            sb.append(" from " + source);
+            out += " from " + source;
         
-        sb.append(" - " + payload);
+        out += " - " + payload;
 
         if(includeColor)
-            sb.append(ANSI_RESET);
+            out += ANSI_RESET;
 
-        return sb.toString();
+        return out;
+    }
+
+    /**
+     * @return the formatted message without any color
+     */
+    public String toString(){
+        return getFormattedMessage(false);
     }
 
     /**
@@ -56,10 +63,10 @@ public class Message{
     public enum Type{
         ERROR("ERROR!!", "\u001B[31m"), //red
         WARNING("WARNING!", "\u001B[33m"), //yellow
-        INFO("Info", "\u001B[32m"),
-        DEBUG("Debug", "\u001B[34m"),
-        TRACE("Trace", "\u001B[35m"),
-        UNKNOWN("Unknown", "\u001B[36m");
+        INFO("Info", "\u001B[32m"), //green
+        DEBUG("Debug", "\u001B[34m"), //blue
+        TRACE("Trace", "\u001B[35m"), //purple
+        UNKNOWN("Unknown", "\u001B[36m");//cyan
 
         public final String value;
         public final String color;
