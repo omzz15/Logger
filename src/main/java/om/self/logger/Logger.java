@@ -17,6 +17,7 @@ import java.util.List;
  */
 public class Logger {
     private static String defaultFileName = "log.txt";
+    private static Logger instance = new Logger();
     /**
      * stack of stored messages(in order)
      * NOTE: not all messages will be stored, the store flag must be true when calling addMessage()
@@ -25,12 +26,25 @@ public class Logger {
     private Path filePath;
     private File file;
 
+    //flags
+    private boolean printNewMessages;
+    private boolean storeNewMessages;
+    private boolean writeNewMessagesToFile;
+
     public static String getDefaultFileName() {
         return defaultFileName;
     }
 
     public static void setDefaultFileName(String defaultFileName) {
         Logger.defaultFileName = defaultFileName;
+    }
+
+    /**
+     * gets the main Logger instance
+     * @return an instance of Logger
+     */
+    public static Logger getInstance(){
+        return instance;
     }
 
     /**
@@ -64,6 +78,18 @@ public class Logger {
             setFilePathToCurrent();
 
         return filePath;
+    }
+
+    public void setPrintNewMessages(boolean printNewMessages) {
+        this.printNewMessages = printNewMessages;
+    }
+
+    public void setStoreNewMessages(boolean storeNewMessages) {
+        this.storeNewMessages = storeNewMessages;
+    }
+
+    public void setWriteNewMessagesToFile(boolean writeNewMessagesToFile) {
+        this.writeNewMessagesToFile = writeNewMessagesToFile;
     }
 
     private static void createFile(File file)throws IOException, SecurityException{
@@ -114,12 +140,13 @@ public class Logger {
      * @return The file.
      * @throws IOException If file can not be created.
      * @throws SecurityException If there are security issues.
+     * @throws IllegalArgumentException if file name is empty
      */
-    public static File getFile(String Name, Path path)throws Exception, IOException, SecurityException{
+    public static File getFile(String Name, Path path)throws IllegalArgumentException, IOException, SecurityException{
         if(path == null)
             path = getCurrentDirectory();
         if (StringUtils.isEmpty(Name))
-            throw new Exception("File name can't be empty");
+            throw new IllegalArgumentException("File name can't be empty");
         File f = new File(path + "\\" + Name);
         createFile(f);
         return f;
@@ -216,10 +243,23 @@ public class Logger {
     }
 
     /**
+     * creates a log file with stored messages using the file name and set path(if there is no set path then it will use default).
+     * @param append Whether to append to the file(keep original stuff or overwrite it).
+     * @param clearMessagesAfterWrite Whether to clear the messages after writing.
+     * @throws IOException If the file cannot be created.
+     * @throws SecurityException if there is a security exception.
+     * @throws IllegalArgumentException if fileName is empty
+     */
+    public void makeFile(String fileName, boolean append, boolean clearMessagesAfterWrite) throws IOException, SecurityException, IllegalArgumentException{
+        makeFile(getFile(fileName, getFilePath()), append, clearMessagesAfterWrite);
+    }
+
+    /**
      * add a message to the Logger.
      * @param message The message to be added.
      * @param print Whether to print the message.
      * @param store Whether to store the message.
+     * @param writeToFile Whether to write the message to a file. This will keep the past contents of the file.
      */
     public void addMessage(Message message, boolean print, boolean store, boolean writeToFile) {
         if (print) {
@@ -233,7 +273,28 @@ public class Logger {
                 makeFile(Arrays.asList(message), getFile(), true);
             }
             catch(Exception e){
-                addMessage(new Message("Could not write message to file.\n" + getExceptionAsString(e), Message.Type.ERROR, true), true, false, false);
+                addMessage(new Message("Could not write message to file.\n" + getExceptionAsString(e), Message.Type.ERROR, true), true, true, false);
+            }
+        }
+    }
+
+    /**
+     * add a message to the Logger using settings from instance.
+     * @param message The message to be added.
+     */
+    public void addMessage(Message message) {
+        if (printNewMessages) {
+            System.out.println(message.getFormattedMessage(true));
+        }
+        if (storeNewMessages) {
+            messages.add(message);
+        }
+        if(writeNewMessagesToFile){
+            try{
+                makeFile(Arrays.asList(message), getFile(), true);
+            }
+            catch(Exception e){
+                addMessage(new Message("Could not write message to file.\n" + getExceptionAsString(e), Message.Type.ERROR, true), true, true, false);
             }
         }
     }
@@ -262,7 +323,8 @@ public class Logger {
 
     /**
      * get all messages that are of certain types.
-     * only use with multiple types because it is slower than getStoredMessagesOfType()
+     * <p></p>
+     * only use with multiple types because it is slower than {@link om.self.logger.Logger#getStoredMessagesOfType(List, Message.Type)}
      * @param messages the messages you want to filter through
      * @param types The types of message to get.
      */
@@ -277,16 +339,14 @@ public class Logger {
     }
 
     /**
-     * implementation of getStoredMessagesOfType() for Logger instances using stored messages
-     * @see this.getStoredMessagesOfType(LinkedList<Message>, Message.Type)
+     * implementation of {@link om.self.logger.Logger#getStoredMessagesOfType(List, Message.Type)} for Logger instances using stored messages
      */
     public LinkedList<Message> getStoredMessagesOfType(Message.Type type){
         return getStoredMessagesOfType(messages, type);
     }
 
     /**
-     * implementation of getStoredMessagesOfTypes() for Logger instances using stored messages
-     * @see this.getStoredMessagesOfTypes(LinkedList<Message>, Message.Type...)
+     * implementation of {@link om.self.logger.Logger#getStoredMessagesOfTypes(List, Message.Type...)} for Logger instances using stored messages
      */
     public LinkedList<Message> getStoredMessagesOfTypes(Message.Type... types){
         return getStoredMessagesOfTypes(messages, types);

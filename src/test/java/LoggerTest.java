@@ -10,6 +10,9 @@ public class LoggerTest {
         //all instances will print to the same console
         Logger l = new Logger();
 
+        //you can also use the central logger instance with this:
+        Logger l2 = Logger.getInstance();
+
         //create messages of different types
         Message info = new Message("hey got some info: -40 is the same temperature in celsius and fahrenheit", Message.Type.INFO, false);
         Message debug = new Message("just a quick debug", Message.Type.DEBUG, true);
@@ -29,6 +32,9 @@ public class LoggerTest {
         l.addMessage(realError, true, true, true);
         l.addMessage(new Message("idk", Message.Type.UNKNOWN, true), true, true, true);
 
+        //lets add a message to l2
+        l2.addMessage(realError, true, true, false);
+
         //let's print them one more time
         //first get all stored messages
         List<Message> messageList = l.getStoredMessages();
@@ -36,5 +42,8 @@ public class LoggerTest {
         System.out.println(Logger.getMessagesAsString(messageList,true));
         //alternatively we can use this
         l.printStoredMessages(false);
+
+        //now we can write to a file using the central logger instance that has a message stored
+        Logger.getInstance().makeFile(false,false);
     }
 }
