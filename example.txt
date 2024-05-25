@@ -1,0 +1,22 @@
+[INFO] hey got some info: -40 is the same temperature in celsius and fahrenheit
+[DEBUG]  from LoggerTest.main(LoggerTest.java:18)just a quick debug
+[WARNING!] it's not failing. yet...
+[ERROR!!]  from LoggerTest.main(LoggerTest.java:20)now the code is blowing up :(
+[ERROR!!] I told you it was blowing up
+	LoggerTest.main(LoggerTest.java:21)
+[UNKNOWN]  from LoggerTest.main(LoggerTest.java:33)idk
+[32m[INFO] hey got some info: -40 is the same temperature in celsius and fahrenheit[0m
+[34m[DEBUG]  from LoggerTest.main(LoggerTest.java:18)just a quick debug[0m
+[33m[WARNING!] it's not failing. yet...[0m
+[31m[ERROR!!]  from LoggerTest.main(LoggerTest.java:20)now the code is blowing up :([0m
+[31m[ERROR!!] I told you it was blowing up
+	LoggerTest.main(LoggerTest.java:21)
+[0m
+[36m[UNKNOWN]  from LoggerTest.main(LoggerTest.java:33)idk[0m
+[INFO] hey got some info: -40 is the same temperature in celsius and fahrenheit
+[DEBUG]  from LoggerTest.main(LoggerTest.java:18)just a quick debug
+[WARNING!] it's not failing. yet...
+[ERROR!!]  from LoggerTest.main(LoggerTest.java:20)now the code is blowing up :(
+[ERROR!!] I told you it was blowing up
+	LoggerTest.main(LoggerTest.java:21)
+[UNKNOWN]  from LoggerTest.main(LoggerTest.java:33)idk

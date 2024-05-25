@@ -42,7 +42,7 @@ public class Message{
         if(source != null)
             out += " from " + source;
         
-        out += " - " + payload;
+        out +=  payload;
 
         if(includeColor)
             out += ANSI_RESET;
@@ -61,12 +61,12 @@ public class Message{
      * The type of message.
      */
     public enum Type{
-        ERROR("ERROR!!", "\u001B[31m"), //red
-        WARNING("WARNING!", "\u001B[33m"), //yellow
-        INFO("Info", "\u001B[32m"), //green
-        DEBUG("Debug", "\u001B[34m"), //blue
-        TRACE("Trace", "\u001B[35m"), //purple
-        UNKNOWN("Unknown", "\u001B[36m");//cyan
+        ERROR("[ERROR!!] ", "\u001B[31m"), //red
+        WARNING("[WARNING!] ", "\u001B[33m"), //yellow
+        INFO("[INFO] ", "\u001B[32m"), //green
+        DEBUG("[DEBUG] ", "\u001B[34m"), //blue
+        TRACE("[TRACE] ", "\u001B[35m"), //purple
+        UNKNOWN("[UNKNOWN] ", "\u001B[36m");//cyan
 
         public final String value;
         public final String color;

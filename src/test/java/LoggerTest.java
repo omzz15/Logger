@@ -8,7 +8,7 @@ public class LoggerTest {
         //create new logger instance
         //every instance can store a separate message stack and path/file
         //all instances will print to the same console
-        Logger l = new Logger();
+        Logger l = new Logger("test");
 
         //you can also use the central logger instance with this:
         Logger l2 = Logger.getInstance();
@@ -22,7 +22,7 @@ public class LoggerTest {
 
         //change the file were messages will be stored
         //can throw IO and security exceptions
-        l.setFile("example.txt", true);
+        l.setFile("example.txt", false);
 
         //add them to logger(print will print to console, store will put them in the logger message stack and, writeToFile will write it to a file)
         l.addMessage(info, true, true, true);
